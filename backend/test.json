@@ -1,8 +1,12 @@
 {
-    "user" : [
+    "todoList" : [
         {
-            "userName" : "hwigyoung",
-            "todoList" : ["1. 잠자기" , "2 .밥먹기"]
+            "todo" : "잠자기",
+            "isDone" : false
+        },
+        {
+            "todo" : "밥먹기",
+            "isDone" : false
         }
     ] 
 }
