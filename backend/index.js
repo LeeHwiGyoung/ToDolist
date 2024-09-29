@@ -11,6 +11,12 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+function init() {
+  if (!fs.existsSync(__dirname + "/toDo.json")) {
+    fs.writeFileSync(__dirname + "/toDo.json", '{"toDoList" : []}');
+  }
+}
+
 function writeTodo(toDoItem) {
   const json = fs.readFileSync(__dirname + "/toDo.json");
   const data = JSON.parse(json);
@@ -36,11 +42,8 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 //JSON 형태의 투두 리스트 반환
-app.get("/toDoList", (req, res) => {
+app.get("/toDo", (req, res) => {
   res.header("Content-Type:application/json");
-  if (!fs.existsSync(__dirname + "/toDo.json")) {
-    fs.writeFileSync(__dirname + "/toDo.json", '{"toDoList" : []}');
-  }
   res.sendFile(__dirname + "/toDo.json");
 });
 
@@ -53,7 +56,7 @@ app.post("/toDo", (req, res) => {
       __dirname + "/toDo.json",
       `{ "toDoList" : ${data} }`,
       (error) => {
-        console.log(error);
+        console.error(error);
       }
     );
     const toDoList = fs.readFileSync(__dirname + "/toDo.json");
@@ -99,4 +102,5 @@ app.put("/toDo", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`server onload  listening on port ${PORT}`);
+  init();
 });
