@@ -22,10 +22,20 @@ function writeTodo(toDoItem) {
   return JSON.stringify(saveData);
 }
 
+function updateTodo(toDoItem) {
+  const json = fs.readFileSync(__dirname + "/toDo.json");
+  const data = JSON.parse(json);
+  const toDoList = data.toDoList;
+  const target = toDoList.find((item) => item.id === toDoItem.id);
+  for (const key of Object.keys(target)) {
+    target[key] = toDoItem[key];
+  }
+  return JSON.stringify(data);
+}
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
+//JSON 형태의 투두 리스트 반환
 app.get("/toDoList", (req, res) => {
   res.header("Content-Type:application/json");
   if (!fs.existsSync(__dirname + "/toDo.json")) {
@@ -34,6 +44,7 @@ app.get("/toDoList", (req, res) => {
   res.sendFile(__dirname + "/toDo.json");
 });
 
+//클라이언트에서 todoItem 을 보낼 시 JSON 에 저장
 app.post("/toDo", (req, res) => {
   res.header("Content-Type:application/json");
   if (req.body) {
@@ -50,13 +61,14 @@ app.post("/toDo", (req, res) => {
   }
 });
 
+//toDoitem 삭제
 app.delete("/toDo", (req, res) => {
-  console.log(req.query.id);
   let text = "";
+  const targetId = Number(req.query.id);
   const toDoList = JSON.parse(fs.readFileSync(__dirname + "/toDo.json"));
   const filterdToDoList = JSON.stringify(
     toDoList.toDoList.filter((item, idx) => {
-      if (item.id !== req.query.id) {
+      if (item.id !== targetId) {
         return item;
       } else {
         text = `{ toDo : ${item.toDo}, isDone : ${item.isDone} } 이 삭제되었습니다.`;
@@ -68,28 +80,21 @@ app.delete("/toDo", (req, res) => {
     __dirname + "/toDo.json",
     `{"toDoList" : ${filterdToDoList}}`
   );
+
   res.send(text);
 });
 
 app.put("/toDo", (req, res) => {
   res.header("Content-Type:application/json");
   if (req.body) {
-    console.log(req.body);
-    /* const data = { todoList: req.body.todoList };
-    for (const [idx, item] of data.todoList.entries()) {
-      item.id = `${idx + 1}`;
-    }
-    fs.writeFileSync(
-      __dirname + "/todo.json",
-      JSON.stringify(data),
-      (error) => {
-        console.log(error);
-      }
-    ); */
-    const toDoList = JSON.parse(fs.readFileSync(__dirname + "/toDo.json"));
-
-    res.json(toDoList);
+    const data = updateTodo(req.body);
+    fs.writeFileSync(__dirname + "/toDo.json", data, (error) => {
+      console.error(error);
+    });
   }
+
+  const toDoList = fs.readFileSync(__dirname + "/toDo.json");
+  res.send(toDoList);
 });
 
 app.listen(PORT, () => {
